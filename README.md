@@ -5,22 +5,31 @@ Um framework Python para automação web usando Selenium com recursos anti-detec
 ## Estrutura do Projeto
 
 ```
-project/
+MULTI-THREAD ACCOUNT CREATION/
 ├── src/
-│   ├── run_automation.py           # Script principal de execução
-│   ├── account_creator_multithreaded.py  # Gerenciador de threads
-│   ├── thread_config.py            # Configurações globais
-│   ├── anti_detection.py           # Sistema anti-detecção
-│   ├── browser_handler.py          # Gerenciador de browser
-│   └── gmail_reader.py             # Leitor de emails
+│   ├── account_creator_multithreaded.py   # Gerenciador de threads
+│   ├── anti_detection.py                  # Sistema anti-detecção
+│   ├── browser_handler.py                 # Gerenciador de browser
+│   ├── gmail_reader.py                    # Leitor de emails
+│   ├── run_automation.py                  # Script principal de execução
+│   ├── setup_and_validate.py              # Setup e validações iniciais
+│   ├── testing_proxy.py                   # Teste de proxies
+│   └── thread_config.py                   # Configurações globais de threads
 ├── config/
-│   ├── config.yaml                 # Configurações do sistema
-│   └── proxies.json                # Configurações de proxies
-├── data/                           # Dados de saída (criado automaticamente)
-├── logs/                           # Logs do sistema (criado automaticamente)
-├── proxies.csv                     # Lista de proxies
-├── accounts_data.csv               # Dados para processamento
-└── .env                            # Variáveis de ambiente
+│   ├── accounts_data.csv                  # Dados de entrada
+│   ├── config.yaml                        # Configurações gerais
+│   └── proxies.csv                        # Lista de proxies
+├── data/
+│   └── accounts_created.csv               # Saída com contas criadas
+├── logs/                                  # Logs do sistema
+├── screenshots/                           # Prints gerados pela automação
+├── venv/                                  # Ambiente virtual (ignorar no Git)
+├── .env                                   # Variáveis de ambiente
+├── .gitignore                             # Arquivo de exclusões do Git
+├── interface_navegador.py                 # Interface gráfica/navegador
+├── proxy_auth_plugin.zip                  # Plugin para proxy com autenticação
+├── README.md                              # Documentação do projeto
+└── requirements.txt                       # Dependências do projeto
 ```
 
 ## Instalação
