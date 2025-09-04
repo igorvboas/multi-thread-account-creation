@@ -1,0 +1,5 @@
+[OK] remover o ./config/proxies.json e usar apenas o proxies.csv
+[OK] mover o proxies.csv para dentro do ./config
+[OK] mover o accounts_data.csv para dentro do ./config
+[OK] mover ./src/log/ para ./log
+[OK] mover ./src/data/ para ./data

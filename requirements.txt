@@ -1,0 +1,27 @@
+# Web Automation Framework - Python Dependencies
+
+# Core Web Automation
+selenium>=4.15.0
+undetected-chromedriver>=3.5.4
+
+# Logging and Output
+loguru>=0.7.2
+colorama>=0.4.6
+
+# Anti-Detection and Browser Fingerprinting
+fake-useragent>=1.4.0
+
+# Configuration and Data Handling
+PyYAML>=6.0.1
+python-dotenv>=1.0.0
+
+# Email Processing (for Gmail integration)
+# Note: Built-in imaplib and email modules are used (no additional requirements)
+
+# Optional: Enhanced CSV/Excel handling (if needed)
+# pandas>=2.0.0
+# openpyxl>=3.1.0
+
+# Development and Testing (optional)
+# pytest>=7.4.0
+# pytest-cov>=4.1.0
