@@ -1,0 +1,27 @@
+# Configurações gerais para criação de contas no Instagram
+
+accounts:
+  count: 50  # Número total de contas a criar
+  batch_size: 5  # Contas por batch (para pausas entre batches)
+
+delays:
+  min_action: 5  # Delay mínimo entre ações (segundos)
+  max_action: 15  # Delay máximo entre ações
+  min_account: 60  # Delay mínimo entre criação de contas
+  max_account: 300  # Delay máximo entre criação de contas
+
+browser:
+  headless: false  # Rodar navegador sem interface gráfica true = nao ver a interface
+  user_agents: [] # Lista vazia para usar fake_useragent
+
+proxies:
+  use_proxies: true  # Ativar rotação de proxies
+  proxy_list_file: "config/proxies.csv"  # Arquivo com lista de proxies
+
+data:
+  output_file: "data/accounts.csv"  # Arquivo para salvar contas criadas
+  faker_locale: "en_US"  # Locale para geração de dados (ex: pt_BR para português)
+
+instagram:
+  signup_url: "https://www.instagram.com/accounts/emailsignup/"  # URL de signup (pode mudar; verifique)
+

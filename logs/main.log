@@ -1,0 +1,46 @@
+2025-10-19T21:04:47.747863-0300 | INFO | 🚀 Iniciando MultiThreadAccountManager com 3 threads máximas
+2025-10-19T21:04:47.751861-0300 | INFO | Carregados 19 proxies ativos
+2025-10-19T21:04:47.754868-0300 | INFO | Carregadas 1 contas para criação
+2025-10-19T21:04:47.770909-0300 | INFO | Execução configurada para 1 threads (máximo: 3)
+2025-10-19T21:04:47.771888-0300 | INFO | Processando 1 contas com 19 proxies disponíveis
+2025-10-19T21:04:47.774491-0300 | INFO | Anexando resultados ao arquivo existente: C:\Users\tiago\OneDrive\Documentos\python\APOGEU\instagram_automation\instagram_account creation\multi-thread account creation\data\accounts_created.csv
+2025-10-19T21:04:47.778178-0300 | INFO | Processando 1 contas em 1 threads
+2025-10-19T21:04:47.780198-0300 | INFO | Iniciando Thread 1: devops_pedro157 -> Proxy 156.228.87.217:3129
+2025-10-19T21:04:47.785199-0300 | INFO | Thread 1 inicializada com proxy 156.228.87.217:3129
+2025-10-19T21:04:47.786220-0300 | ERROR | Erro ao carregar config: [Errno 2] No such file or directory: 'config/config.yaml'
+2025-10-19T21:04:47.788203-0300 | ERROR | Arquivo de proxies não encontrado: config/proxies.csv
+2025-10-19T21:04:47.789200-0300 | INFO | AntiDetection inicializado com 0
+2025-10-19T21:04:47.791205-0300 | INFO | BrowserHandler inicializado para Thread 1
+2025-10-19T21:04:47.792204-0300 | INFO | Iniciando criação do driver undetected...
+2025-10-19T21:04:47.931582-0300 | INFO | Opções configuradas, criando driver Chrome...
+2025-10-19T21:04:55.298055-0300 | INFO | Driver criado com sucesso, configurando timeouts...
+2025-10-19T21:04:55.319377-0300 | INFO | Configurações CDP aplicadas com sucesso
+2025-10-19T21:04:55.319377-0300 | INFO | Navegador undetected configurado com sucesso. Fingerprint: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb...
+2025-10-19T21:04:55.320382-0300 | INFO | Thread 1: Driver inicializado com sucesso.
+2025-10-19T21:04:55.321377-0300 | INFO | Thread 1: Browser inicializado com sucesso
+2025-10-19T21:04:55.322376-0300 | INFO | Thread 1: Inicialização completa com sucesso
+2025-10-19T21:04:55.324379-0300 | INFO | Thread 1: Iniciando criação de conta: devops_pedro157 | automacao_conta47@devops-apogeu.uk
+2025-10-19T21:04:55.325390-0300 | INFO | Thread 1: Navegando para: https://www.instagram.com/accounts/emailsignup/
+2025-10-19T21:04:55.327385-0300 | INFO | Thread 1: Navegando para https://www.instagram.com/accounts/emailsignup/
+2025-10-19T21:05:22.113713-0300 | INFO | Thread 1: URL atual após navegação: https://www.instagram.com/accounts/emailsignup/
+2025-10-19T21:05:32.115311-0300 | INFO | Thread 1: Aguardando página de signup...
+2025-10-19T21:05:32.146417-0300 | INFO | Thread 1: Página de signup detectada: https://www.instagram.com/accounts/emailsignup/
+2025-10-19T21:05:32.146417-0300 | INFO | Thread 1: Preenchendo formulário de cadastro...
+2025-10-19T21:05:59.594839-0300 | INFO | Thread 1: Preenchendo data de nascimento...
+2025-10-19T21:06:13.227950-0300 | INFO | Thread 1: Procurando código de verificação para email: automacao_conta47@devops-apogeu.uk
+2025-10-19T21:06:14.348550-0300 | INFO | Thread 1: Tentativa 1/5 para buscar código...
+2025-10-19T21:06:15.399766-0300 | INFO | Thread 1: Código de verificação encontrado no assunto: 527031
+2025-10-19T21:06:16.323463-0300 | INFO | Thread 1: Inserindo código de verificação: 527031
+2025-10-19T21:06:23.993430-0300 | INFO | Detalhes da conta (Thread 1) => Email: automacao_conta47@devops-apogeu.uk - username: devops_pedro157 - psw: jfrh78FVdriW.frj - Status: success - fingerprint: 156.228.87.217:3129
+2025-10-19T21:06:23.997422-0300 | INFO | Thread 1: Conta criada com sucesso: devops_pedro157
+2025-10-19T21:06:23.999415-0300 | INFO | Thread 1: Fechando navegador.
+2025-10-19T21:06:24.400051-0300 | INFO | Thread 1: Browser fechado com sucesso
+2025-10-19T21:06:24.401044-0300 | WARNING | Thread 1: Browser já estava fechado ou não inicializado
+2025-10-19T21:06:24.402052-0300 | INFO | Thread 1: Cleanup realizado com sucesso
+2025-10-19T21:06:24.403052-0300 | INFO | ✅ Thread 1: Conta devops_pedro157 criada com sucesso
+2025-10-19T21:06:24.405051-0300 | INFO | 📊 RESULTADOS FINAIS:
+2025-10-19T21:06:24.406049-0300 | INFO | ✅ Contas criadas com sucesso: 1
+2025-10-19T21:06:24.407412-0300 | INFO | ❌ Falhas: 0
+2025-10-19T21:06:24.407412-0300 | INFO | ⏱️ Tempo total de execução: 96.63 segundos
+2025-10-19T21:06:24.408680-0300 | INFO | 📁 Resultados salvos em: C:\Users\tiago\OneDrive\Documentos\python\APOGEU\instagram_automation\instagram_account creation\multi-thread account creation\data\accounts_created.csv
+2025-10-19T21:06:24.415678-0300 | INFO | Automação concluída com sucesso

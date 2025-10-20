@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Dict, Any, List
 import undetected_chromedriver as uc
 
-CSV_PATH = Path("./src/data/accounts_created.csv")
+CSV_PATH = Path("./data/accounts_created.csv")
 
 def read_csv_rows(csv_path: Path) -> List[Dict[str, Any]]:
     if not csv_path.exists():
@@ -16,43 +16,107 @@ def read_csv_rows(csv_path: Path) -> List[Dict[str, Any]]:
 
 def build_label(row: Dict[str, Any]) -> str:
     parts = []
-    for key in ("username", "email", "full_name"):
+    # Add username and email if available
+    for key in ("username", "email"):
         v = (row.get(key) or "").strip()
         if v:
             parts.append(v)
-    ph, pp = (row.get("proxy_host") or "").strip(), (row.get("proxy_port") or "").strip()
-    if ph and pp:
-        parts.append(f"proxy: {ph}:{pp}")
-    ua = (row.get("user_agent") or "").strip()
-    if ua:
-        short = ua[:45] + ("..." if len(ua) > 45 else "")
-        parts.append(f"UA: {short}")
+    
+    # Add full_name if available
+    full_name = (row.get("full_name") or "").strip()
+    if full_name:
+        parts.append(full_name)
+    
+    # Extract proxy info from proxy_used field
+    proxy_used = (row.get("proxy_used") or "").strip()
+    if proxy_used:
+        parts.append(f"proxy: {proxy_used}")
+    
+    # Extract user_agent from fingerprint JSON
+    fingerprint = row.get("fingerprint", "")
+    if fingerprint and isinstance(fingerprint, str):
+        import json
+        try:
+            fp_data = json.loads(fingerprint)
+            ua = fp_data.get("user_agent", "")
+            if ua:
+                short = ua[:45] + ("..." if len(ua) > 45 else "")
+                parts.append(f"UA: {short}")
+        except (json.JSONDecodeError, TypeError):
+            pass
+    
     return " — ".join(parts) if parts else "Linha sem identificadores"
 
 def make_chrome_options(row: Dict[str, Any]) -> uc.ChromeOptions:
+    import json
     opts = uc.ChromeOptions()
     opts.add_argument("--disable-blink-features=AutomationControlled")
+    
+    # Set headless mode based on configuration or default to False
+    headless = row.get("headless", "").strip().lower()
+    if headless in ["true", "1", "yes"]:
+        opts.add_argument("--headless")
+    
+    # Extract data from fingerprint JSON
+    fingerprint = row.get("fingerprint", "")
+    if fingerprint and isinstance(fingerprint, str):
+        try:
+            fp_data = json.loads(fingerprint)
+            
+            # Extract user agent
+            ua = fp_data.get("user_agent", "")
+            if ua:
+                opts.add_argument(f"--user-agent={ua}")
+            
+            # Extract language
+            lang = fp_data.get("language", "")
+            if lang:
+                opts.add_argument(f"--lang={lang}")
+            
+            # Extract window size
+            screen_width = fp_data.get("screen_width", "")
+            screen_height = fp_data.get("screen_height", "")
+            if screen_width and screen_height:
+                opts.add_argument(f"--window-size={screen_width},{screen_height}")
+                
+        except (json.JSONDecodeError, TypeError):
+            pass
+    
+    # Handle proxy from proxy_used field
+    proxy_used = (row.get("proxy_used") or "").strip()
+    if proxy_used and ":" in proxy_used:
+        # Format: host:port
+        opts.add_argument(f"--proxy-server=http://{proxy_used}")
+    
+    # Handle additional options from CSV fields
     lang = (row.get("lang") or "").strip()
     if lang:
         opts.add_argument(f"--lang={lang}")
+    
     ws = (row.get("window_size") or "").strip()
     if ws and "," in ws:
         opts.add_argument(f"--window-size={ws}")
+    
     ua = (row.get("user_agent") or "").strip()
     if ua:
         opts.add_argument(f"--user-agent={ua}")
+    
     ext_dir = (row.get("extension_dir") or "").strip()
     if ext_dir:
         for ext in [p.strip() for p in ext_dir.split(",") if p.strip()]:
             if Path(ext).exists():
                 opts.add_argument(f"--load-extension={ext}")
+    
     user_data_dir = (row.get("user_data_dir") or "").strip()
     profile_name = (row.get("profile_name") or "").strip()
     if user_data_dir:
-        udd = Path(user_data_dir); udd.mkdir(parents=True, exist_ok=True)
+        udd = Path(user_data_dir)
+        udd.mkdir(parents=True, exist_ok=True)
         opts.add_argument(f"--user-data-dir={str(udd.resolve())}")
         if profile_name:
             opts.add_argument(f"--profile-directory={profile_name}")
+    
+    # Handle separate proxy fields
     ph, pp = (row.get("proxy_host") or "").strip(), (row.get("proxy_port") or "").strip()
     pu, pw = (row.get("proxy_user") or "").strip(), (row.get("proxy_pass") or "").strip()
     if ph and pp:
@@ -60,15 +124,155 @@ def make_chrome_options(row: Dict[str, Any]) -> uc.ChromeOptions:
             opts.add_argument(f"--proxy-server=http://{pu}:{pw}@{ph}:{pp}")
         else:
             opts.add_argument(f"--proxy-server=http://{ph}:{pp}")
+    
     return opts
 
+def make_chrome_options_without_proxy(row: Dict[str, Any]) -> uc.ChromeOptions:
+    """Create Chrome options without proxy"""
+    import json
+    opts = uc.ChromeOptions()
+    opts.add_argument("--disable-blink-features=AutomationControlled")
+    
+    # Set headless mode based on configuration or default to False
+    headless = row.get("headless", "").strip().lower()
+    if headless in ["true", "1", "yes"]:
+        opts.add_argument("--headless")
+    
+    # Extract data from fingerprint JSON
+    fingerprint = row.get("fingerprint", "")
+    if fingerprint and isinstance(fingerprint, str):
+        try:
+            fp_data = json.loads(fingerprint)
+            
+            # Extract user agent
+            ua = fp_data.get("user_agent", "")
+            if ua:
+                opts.add_argument(f"--user-agent={ua}")
+            
+            # Extract language
+            lang = fp_data.get("language", "")
+            if lang:
+                opts.add_argument(f"--lang={lang}")
+            
+            # Extract window size
+            screen_width = fp_data.get("screen_width", "")
+            screen_height = fp_data.get("screen_height", "")
+            if screen_width and screen_height:
+                opts.add_argument(f"--window-size={screen_width},{screen_height}")
+                
+        except (json.JSONDecodeError, TypeError):
+            pass
+    
+    # Handle additional options from CSV fields (but skip proxy)
+    lang = (row.get("lang") or "").strip()
+    if lang:
+        opts.add_argument(f"--lang={lang}")
+    
+    ws = (row.get("window_size") or "").strip()
+    if ws and "," in ws:
+        opts.add_argument(f"--window-size={ws}")
+    
+    ua = (row.get("user_agent") or "").strip()
+    if ua:
+        opts.add_argument(f"--user-agent={ua}")
+    
+    ext_dir = (row.get("extension_dir") or "").strip()
+    if ext_dir:
+        for ext in [p.strip() for p in ext_dir.split(",") if p.strip()]:
+            if Path(ext).exists():
+                opts.add_argument(f"--load-extension={ext}")
+    
+    user_data_dir = (row.get("user_data_dir") or "").strip()
+    profile_name = (row.get("profile_name") or "").strip()
+    if user_data_dir:
+        udd = Path(user_data_dir)
+        udd.mkdir(parents=True, exist_ok=True)
+        opts.add_argument(f"--user-data-dir={str(udd.resolve())}")
+        if profile_name:
+            opts.add_argument(f"--profile-directory={profile_name}")
+    
+    return opts
+
+def test_proxy_connection(proxy_host, proxy_port):
+    """Test if proxy is working"""
+    import socket
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(5)  # 5 second timeout
+        result = sock.connect_ex((proxy_host, int(proxy_port)))
+        sock.close()
+        return result == 0
+    except:
+        return False
+
 def open_browser(row: Dict[str, Any]) -> None:
+    global _drivers
     try:
         options = make_chrome_options(row)
-        driver = uc.Chrome(options=options, headless=False, use_subprocess=True)
-        driver.set_page_load_timeout(120)
-        driver.get("https://www.google.com/")
-        global _drivers; _drivers.append(driver)
+        
+        # Test proxy before using it
+        proxy_used = row.get("proxy_used", "").strip()
+        if proxy_used and ":" in proxy_used:
+            proxy_host, proxy_port = proxy_used.split(":")
+            if not test_proxy_connection(proxy_host, proxy_port):
+                # Remove proxy from options if it's not working
+                print(f"Proxy {proxy_used} não está funcionando, removendo...")
+                # Create new options without proxy
+                options = make_chrome_options_without_proxy(row)
+        
+        # For undetected_chromedriver 3.5.5, use the correct syntax
+        driver = uc.Chrome(options=options)
+        driver.set_page_load_timeout(30)  # Reduced timeout
+        
+        # Add some additional stability options
+        driver.implicitly_wait(10)
+        
+        try:
+            # Try a simpler site first
+            driver.get("https://httpbin.org/ip")
+            _drivers.append(driver)
+            print("Browser opened successfully!")
+        except Exception as nav_error:
+            try:
+                # Try without proxy as fallback
+                print("Trying without proxy...")
+                options = make_chrome_options_without_proxy(row)
+                driver.quit()
+                driver = uc.Chrome(options=options)
+                driver.set_page_load_timeout(30)
+                driver.implicitly_wait(10)
+                driver.get("https://httpbin.org/ip")
+                _drivers.append(driver)
+                print("Browser opened successfully without proxy!")
+            except Exception as final_error:
+                _drivers.append(driver)
+                print(f"Navigation error (browser still open): {final_error}")
+            
+    except Exception as e:
+        messagebox.showerror("Erro ao abrir navegador", str(e))
+
+def open_browser_no_proxy(row: Dict[str, Any]) -> None:
+    """Open browser without proxy"""
+    global _drivers
+    try:
+        options = make_chrome_options_without_proxy(row)
+        
+        # For undetected_chromedriver 3.5.5, use the correct syntax
+        driver = uc.Chrome(options=options)
+        driver.set_page_load_timeout(30)
+        
+        # Add some additional stability options
+        driver.implicitly_wait(10)
+        
+        try:
+            # Try a simple site
+            driver.get("https://httpbin.org/ip")
+            _drivers.append(driver)
+            print("Browser opened successfully without proxy!")
+        except Exception as nav_error:
+            _drivers.append(driver)
+            print(f"Navigation error (browser still open): {nav_error}")
+            
     except Exception as e:
         messagebox.showerror("Erro ao abrir navegador", str(e))
 
@@ -101,6 +305,8 @@ class App(tk.Tk):
         actions = ttk.Frame(frm); actions.pack(fill=tk.X, pady=(8,0))
         self.btn_open = ttk.Button(actions, text="Abrir Navegador", command=self._on_open_clicked, state=tk.DISABLED)
         self.btn_open.pack(side=tk.LEFT)
+        self.btn_open_no_proxy = ttk.Button(actions, text="Abrir sem Proxy", command=self._on_open_no_proxy_clicked, state=tk.DISABLED)
+        self.btn_open_no_proxy.pack(side=tk.LEFT, padx=(10,0))
         self.status_var = tk.StringVar(value="Status: pronto")
         ttk.Label(frm, textvariable=self.status_var).pack(anchor="w", pady=(12,0))
         # Text widget for details
@@ -159,6 +365,7 @@ class App(tk.Tk):
         if self.labels:
             self.combo.current(0)
             self.btn_open.config(state=tk.NORMAL)
+            self.btn_open_no_proxy.config(state=tk.NORMAL)
             self._update_details(0)
         self.combo.bind("<<ComboboxSelected>>", self._on_selection_changed)
         self.status_var.set(f"Status: {len(self.labels)} itens carregados do CSV.")
@@ -167,6 +374,7 @@ class App(tk.Tk):
         self.combo['values'] = ["(erro ao carregar CSV)"]
         self.combo.current(0)
         self.btn_open.config(state=tk.DISABLED)
+        self.btn_open_no_proxy.config(state=tk.DISABLED)
         self.status_var.set(f"Erro: {e}")
         messagebox.showerror("Erro no CSV", str(e))
 
@@ -192,6 +400,22 @@ class App(tk.Tk):
             try:
                 open_browser(row)
                 self.status_var.set("Navegador aberto com sucesso.")
+            except Exception as e:
+                self.status_var.set("Falha ao abrir navegador.")
+                messagebox.showerror("Erro", str(e))
+        threading.Thread(target=work, daemon=True).start()
+
+    def _on_open_no_proxy_clicked(self):
+        idx = self.combo.current()
+        if idx < 0 or idx >= len(self.rows):
+            messagebox.showwarning("Seleção inválida", "Selecione um item válido do dropdown.")
+            return
+        row = self.rows[idx]
+        def work():
+            self.status_var.set("Abrindo navegador sem proxy...")
+            try:
+                open_browser_no_proxy(row)
+                self.status_var.set("Navegador aberto com sucesso (sem proxy).")
             except Exception as e:
                 self.status_var.set("Falha ao abrir navegador.")
                 messagebox.showerror("Erro", str(e))
