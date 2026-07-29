@@ -34,8 +34,8 @@ class ThreadConfig:
     EMAIL_CHECK_INTERVAL: int = 15  # segundos
     
     # Configurações de Arquivos
-    PROXIES_FILE: str = os.path.join(SCRIPT_DIR, "proxies.csv")
-    ACCOUNTS_FILE: str = os.path.join(SCRIPT_DIR, "accounts_data.csv")
+    PROXIES_FILE: str = PROXY_CSV_FILE
+    ACCOUNTS_FILE: str = ACCOUNTS_CSV_FILE
     OUTPUT_FILE: str = os.path.join(DATA_DIR, "accounts_created.csv")
     LOGS_DIR: str = LOGS_DIR
     DATA_DIR: str = DATA_DIR

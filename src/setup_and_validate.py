@@ -33,12 +33,15 @@ load_dotenv()
 
 # Variáveis globais para caminhos dos arquivos
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROXY_CSV_FILE = os.path.join(SCRIPT_DIR, 'proxies.csv')
-ACCOUNTS_CSV_FILE = os.path.join(SCRIPT_DIR, 'accounts_data.csv')
-DATA_DIR = os.path.join(SCRIPT_DIR, 'data')
-LOGS_DIR = os.path.join(SCRIPT_DIR, 'logs')
+BASE_DIR = os.path.dirname(SCRIPT_DIR)  # sobe 1 nível (project_root)
+CONFIG_DIR = os.path.join(BASE_DIR, 'config')
+PROXY_CSV_FILE = os.path.join(CONFIG_DIR, 'proxies.csv')
+ACCOUNTS_CSV_FILE = os.path.join(CONFIG_DIR, 'accounts_data.csv')
+DATA_DIR = os.path.join(BASE_DIR, 'data')
+LOGS_DIR = os.path.join(BASE_DIR, 'logs')
 
 # Criar diretórios se não existirem
+os.makedirs(CONFIG_DIR, exist_ok=True)
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(LOGS_DIR, exist_ok=True)
 
