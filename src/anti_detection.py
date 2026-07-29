@@ -13,6 +13,43 @@ import undetected_chromedriver as uc
 from fake_useragent import UserAgent
 
 import logging
+
+
+def detect_chrome_major() -> Optional[int]:
+    """Retorna a major version do Chrome instalado, ou None se não detectar.
+
+    O undetected_chromedriver precisa de um driver da mesma major do browser;
+    sem isso ele baixa o mais recente e a sessão falha com 'session not created'.
+    """
+    import re
+    import subprocess
+
+    candidates = [
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "/Applications/Chromium.app/Contents/MacOS/Chromium",
+        "google-chrome",
+        "chromium",
+        "chrome",
+    ]
+
+    for binary in candidates:
+        try:
+            output = subprocess.run(
+                [binary, "--version"], capture_output=True, text=True, timeout=10
+            ).stdout
+        except (OSError, subprocess.SubprocessError):
+            continue
+
+        match = re.search(r"(\d+)\.\d+\.\d+", output)
+        if match:
+            major = int(match.group(1))
+            logger.info("Chrome detectado: major {} ({})", major, output.strip())
+            return major
+
+    logger.warning("Não foi possível detectar a versão do Chrome; usando o driver mais recente")
+    return None
+
+
 class AntiDetection:
     """Classe para estratégias anti-detecção em automações web."""
 
@@ -464,8 +501,10 @@ class AntiDetection:
             
             logger.info("Opções configuradas, criando driver Chrome...")
             
-            # Criar driver com detecção automática de versão
-            driver = uc.Chrome(options=options, version_main=None)
+            # Criar driver casando com a versão do Chrome instalado.
+            # version_main=None faria o uc baixar o driver mais recente, que
+            # quebra sempre que o Chrome local está uma major atrás.
+            driver = uc.Chrome(options=options, version_main=detect_chrome_major())
             
             if driver is None:
                 raise Exception("uc.Chrome retornou None")

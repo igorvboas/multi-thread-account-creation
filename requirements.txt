@@ -3,6 +3,12 @@
 # Core Web Automation
 selenium>=4.15.0
 undetected-chromedriver>=3.5.4
+# undetected-chromedriver importa distutils, removido do stdlib no Python 3.12+.
+# setuptools fornece o shim; a partir da v80 ele deixa de existir.
+setuptools<80
+
+# HTTP (usado pelos testes de proxy)
+requests>=2.31.0
 
 # Logging and Output
 loguru>=0.7.2
