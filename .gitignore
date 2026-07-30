@@ -1,1 +1,22 @@
-venv
+venv/
+.venv/
+
+# Segredos
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Logs
+logs/
+*.log
+
+# macOS
+.DS_Store
+
+# Plugin de proxy gerado em runtime (contem credenciais)
+proxy_auth_plugin/
+proxy_auth_plugin.zip
