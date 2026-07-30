@@ -160,74 +160,11 @@ class ThreadSafeAccountCreator:
             self.wait = None
             return False
         
-
-    def create_account_old(self, account: AccountData) -> bool:
-        """Cria uma nova conta no Instagram."""
-        logger.info("Thread {}: Iniciando criação de conta: {} | {}", 
-                   self.thread_id, account.username, account.email)
-        try:
-            #if not self.initialize_browser():
-            #    return False
-            # ADICIONAR verificação se browser está funcionando
-            if not self.driver:
-                logger.error("Thread {}: Browser não inicializado", self.thread_id)
-                return False
-
-            logger.info("Thread {}: Navegando para: {}", self.thread_id, self.signup_url)
-            self.browser.navigate(self.signup_url)
-
-            logger.info("Thread {}: URL atual após navegação: {}", 
-                       self.thread_id, self.browser.driver.current_url)
-            time.sleep(5)
-
-            # Aguardar página de signup
-            self._wait_for_signup_page()
-
-            # Preencher formulário principal
-            logger.info("Thread {}: Preenchendo formulário de cadastro...", self.thread_id)
-            
-            email_field = self._wait_for_element("//input[@name='emailOrPhone']")
-            self.browser.human_like_input(email_field, account.email)
-
-            name_field = self._wait_for_element("//input[@name='fullName']")
-            self.browser.human_like_input(name_field, account.full_name)
-
-            username_field = self._wait_for_element("//input[@name='username']")
-            self.browser.human_like_input(username_field, account.username)
-
-            password_field = self._wait_for_element("//input[@name='password']")
-            self.browser.human_like_input(password_field, account.password)
-
-            # Submeter formulário
-            submit_button = self._wait_for_element("//button[@type='submit' and not(@disabled)]")
-            submit_button.click()
-            self.browser.ad.sleep_with_jitter(5, 10)
-
-            # Preencher data de nascimento
-            if self._fill_birthdate():
-                # Aguardar e confirmar código de verificação
-                code = self._get_verification_code(account.email)
-                if code and self._confirm_verification_code(code):
-                    self._save_account(account, "success", self.browser.anti.generate_fingerprint())
-                    logger.info("Thread {}: Conta criada com sucesso: {}", self.thread_id, account.username)
-                    return True
-
-            self._save_account(account, "failed", self.browser.anti.generate_fingerprint())
-            return False
-
-        except Exception as e:
-            logger.error("Thread {}: Erro ao criar conta: {}", self.thread_id, e)
-            self._save_account(account, "failed", {})
-            return False
-        finally:
-            self.close_browser()
-
     def create_account(self, account: AccountData) -> bool:
-        """Cria uma nova conta no Instagram."""
+        """Cria uma nova conta no Instagram (formulário atualizado)."""
         logger.info("Thread {}: Iniciando criação de conta: {} | {}", 
                 self.thread_id, account.username, account.email)
         try:
-            # VERIFICAR se o browser já foi inicializado (não inicializar novamente)
             if not self.browser or not self.driver:
                 logger.error("Thread {}: Browser não está inicializado", self.thread_id)
                 return False
@@ -238,40 +175,60 @@ class ThreadSafeAccountCreator:
                     self.thread_id, self.driver.current_url)
             time.sleep(10)
 
-            # Aguardar página de signup
             self._wait_for_signup_page()
 
-            # Preencher formulário principal
             logger.info("Thread {}: Preenchendo formulário de cadastro...", self.thread_id)
-            
-            email_field = self._wait_for_element("//input[@name='emailOrPhone']")
+
+            # 1. Email / celular
+            email_field = self._wait_for_element(
+                "//label[.//span[contains(text(),'Número de celular ou email')]]//input[@type='text']"
+                " | //input[@type='text'][following-sibling::label[contains(.,'Número de celular ou email')]]"
+            )
             self.browser.human_like_input(email_field, account.email)
 
-            name_field = self._wait_for_element("//input[@name='fullName']")
-            self.browser.human_like_input(name_field, account.full_name)
-
-            username_field = self._wait_for_element("//input[@name='username']")
-            self.browser.human_like_input(username_field, account.username)
-
-            password_field = self._wait_for_element("//input[@name='password']")
+            # 2. Senha
+            password_field = self._wait_for_element(
+                "//label[.//span[contains(text(),'Senha')]]//input[@type='password']"
+                " | //input[@type='password']"
+            )
             self.browser.human_like_input(password_field, account.password)
 
-            # Submeter formulário
-            # print("--------> Cheguei aqui no botão de continuar")
-            submit_button = self._wait_for_element("//button[@type='submit' and not(@disabled)]")
+            # 3. Data de nascimento (agora NA MESMA página, antes do submit)
+            if not self._fill_birthdate():
+                self._save_account(account, "failed", self.browser.ad.generate_fingerprint())
+                return False
+
+            # 4. Nome completo
+            name_field = self._wait_for_element(
+                "//label[.//span[contains(text(),'Nome')]]//input[@type='text']"
+                " | //input[@type='text'][following-sibling::label[contains(.,'Nome completo')]]"
+            )
+            # evita pegar o campo de email de novo: preferir o que tem label "Nome completo"
+            name_field = self._wait_for_element(
+                "//input[@type='text'][following-sibling::label[contains(.,'Nome completo')]]"
+                " | //label[contains(.,'Nome completo')]//input[@type='text']"
+            )
+            self.browser.human_like_input(name_field, account.full_name)
+
+            # 5. Nome de usuário
+            username_field = self._wait_for_element(
+                "//input[@aria-label='Nome de usuário' or @type='search']"
+            )
+            self.browser.human_like_input(username_field, account.username)
+
+            # 6. Botão Enviar
+            submit_button = self._wait_for_element(
+                "//div[@role='button' and .//span[contains(text(),'Enviar')]]"
+            )
             submit_button.click()
-            ## print("--------> Cliquei no botão")
-            #self.browser.ad.sleep_with_jitter(50, 100)
             self.browser.ad.sleep_with_jitter(5, 10)
-            
-            # Preencher data de nascimento
-            if self._fill_birthdate():
-                # Aguardar e confirmar código de verificação
-                code = self._get_verification_code(account.email)
-                if code and self._confirm_verification_code(code):
-                    self._save_account(account, "success", self.browser.ad.generate_fingerprint())
-                    logger.info("Thread {}: Conta criada com sucesso: {}", self.thread_id, account.username)
-                    return True
+
+            # Código de verificação (página seguinte)
+            code = self._get_verification_code(account.email)
+            if code and self._confirm_verification_code(code):
+                self._save_account(account, "success", self.browser.ad.generate_fingerprint())
+                logger.info("Thread {}: Conta criada com sucesso: {}", self.thread_id, account.username)
+                return True
 
             self._save_account(account, "failed", self.browser.ad.generate_fingerprint())
             return False
@@ -281,7 +238,6 @@ class ThreadSafeAccountCreator:
             self._save_account(account, "failed", {})
             return False
         finally:
-            # Usar o método cleanup em vez de close_browser
             self.cleanup()
 
     def close_browser(self):
@@ -347,13 +303,19 @@ class ThreadSafeAccountCreator:
         """Aguarda a página de signup ou verifica redirecionamento."""
         try:
             logger.info("Thread {}: Aguardando página de signup...", self.thread_id)
-            self.wait.until(EC.url_contains("accounts/emailsignup"))
+            self.wait.until(
+                EC.any_of(
+                    EC.url_contains("accounts/emailsignup"),
+                    EC.presence_of_element_located((By.XPATH, "//span[contains(text(),'Comece a usar o Instagram')]")),
+                    EC.presence_of_element_located((By.XPATH, "//span[contains(text(),'Número de celular ou email')]")),
+                )
+            )
             logger.info("Thread {}: Página de signup detectada: {}", 
-                       self.thread_id, self.browser.driver.current_url)
+                       self.thread_id, self.driver.current_url)
         except TimeoutException:
             logger.warning("Thread {}: Redirecionado ou bloqueado. URL atual: {}", 
-                          self.thread_id, self.browser.driver.current_url)
-            self.browser.driver.save_screenshot(f"debug_screenshot_thread_{self.thread_id}.png")
+                          self.thread_id, self.driver.current_url)
+            self.driver.save_screenshot(f"debug_screenshot_thread_{self.thread_id}.png")
             raise Exception("Página de signup não carregada.")
 
     def _wait_for_element(self, xpath: str, timeout: int = 20):
@@ -365,47 +327,68 @@ class ThreadSafeAccountCreator:
             raise Exception(f"Elemento {xpath} não encontrado.")
 
     def _fill_birthdate(self) -> bool:
-        """Preenche data de nascimento."""
+        """Preenche data de nascimento (comboboxes do formulário atual)."""
         try:
             logger.info("Thread {}: Preenchendo data de nascimento...", self.thread_id)
-            time.sleep(3)
+            time.sleep(2)
 
-            month_select = self._wait_for_element("//span[@class='_aav3'][1]//select") # self._wait_for_element("//select[@title='Mês:']")
-            month_select.click()
-            month_options = month_select.find_elements(By.TAG_NAME, "option")
-            random.choice(month_options[1:]).click()
+            # Dia
+            day_cb = self._wait_for_element("//div[@role='combobox' and @aria-label='Selecionar o dia']")
+            day_cb.click()
+            time.sleep(0.5)
+            day = random.randint(1, 28)
+            day_opt = self._wait_for_element(f"//div[@role='option' and normalize-space()='{day}']")
+            day_opt.click()
+            time.sleep(0.4)
 
-            day_select = self._wait_for_element("//span[@class='_aav3'][2]//select") # self._wait_for_element("//select[@title='Dia:']")
-            day_select.click()
-            day_options = day_select.find_elements(By.TAG_NAME, "option")
-            random.choice(day_options[1:]).click()
+            # Mês
+            month_cb = self._wait_for_element("//div[@role='combobox' and @aria-label='Selecionar o mês']")
+            month_cb.click()
+            time.sleep(0.5)
+            months = [
+                "janeiro", "fevereiro", "março", "abril", "maio", "junho",
+                "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"
+            ]
+            month = random.choice(months)
+            month_opt = self._wait_for_element(f"//div[@role='option' and normalize-space()='{month}']")
+            month_opt.click()
+            time.sleep(0.4)
 
-            year_select = self._wait_for_element("//span[@class='_aav3'][3]//select") # self._wait_for_element("//select[@title='Ano:']")
-            year_select.click()
-            year_options = year_select.find_elements(By.TAG_NAME, "option")
-            random.choice(year_options[20:40]).click()
+            # Ano (adulto: ~1985–2005)
+            year_cb = self._wait_for_element("//div[@role='combobox' and @aria-label='Selecionar o ano']")
+            year_cb.click()
+            time.sleep(0.5)
+            year = random.randint(1985, 2005)
+            year_opt = self._wait_for_element(f"//div[@role='option' and normalize-space()='{year}']")
+            year_opt.click()
+            time.sleep(0.5)
 
-            
-
-            # next_button = self._wait_for_element("//button[contains(text(), 'Avançar')]")
-            next_button = self._wait_for_element("//button[contains(@class, '_aswr') and contains(@class, '_asws') and not(@disabled)]")
-            next_button.click()
-            # self.browser.anti.sleep_with_jitter(3, 6)
-            self.browser.ad.sleep_with_jitter(5, 10)
+            logger.info("Thread {}: Data preenchida: {}/{}/{}", self.thread_id, day, month, year)
             return True
         except Exception as e:
             logger.error("Thread {}: Erro ao preencher data de nascimento: {}", self.thread_id, e)
             return False
 
+
     def _confirm_verification_code(self, code: str) -> bool:
         """Confirma código de verificação automaticamente."""
         try:
             logger.info("Thread {}: Inserindo código de verificação: {}", self.thread_id, code)
-            code_field = self._wait_for_element("//input[@name='email_confirmation_code']")
+            # tenta name antigo + fallbacks comuns
+            try:
+                code_field = self._wait_for_element("//input[@name='email_confirmation_code']", timeout=8)
+            except Exception:
+                code_field = self._wait_for_element(
+                    "//input[@type='text' or @type='tel' or @inputmode='numeric']"
+                )
             self.browser.human_like_input(code_field, code)
 
-            # confirm_button = self._wait_for_element("//div[@role='button' and contains(text(), 'Avançar')]")
-            confirm_button = self._wait_for_element("//div[@role='button'][@tabindex='0']")
+            try:
+                confirm_button = self._wait_for_element(
+                    "//div[@role='button' and (.//span[contains(text(),'Avançar')] or .//span[contains(text(),'Confirmar')] or contains(.,'Avançar'))]"
+                )
+            except Exception:
+                confirm_button = self._wait_for_element("//div[@role='button'][@tabindex='0']")
             confirm_button.click()
             self.browser.ad.sleep_with_jitter(5, 10)
             return True
