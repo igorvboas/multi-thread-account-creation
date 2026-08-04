@@ -249,7 +249,7 @@ class ThreadSafeAccountCreator:
         logger.info("Thread {}: Procurando código de verificação para email: {}", 
                    self.thread_id, target_email)
         
-        gmail_reader = GmailReader(self.gmail_username, self.gmail_password)
+        gmail_reader = GmailReader(self.gmail_username, self.gmail_password, self.gmail_server)
         if not gmail_reader.connect():
             logger.error("Thread {}: Falha ao conectar ao Gmail.", self.thread_id)
             return None

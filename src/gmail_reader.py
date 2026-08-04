@@ -7,24 +7,26 @@ import time
 from dotenv import load_dotenv
 
 class GmailReader:
-    def __init__(self, email_address, password):
+    def __init__(self, email_address, password, server=None):
         """
         Inicializa o leitor de Gmail
-        
+
         Args:
             email_address: Seu endereço de email do Gmail
             password: Senha de aplicativo (não a senha normal da conta)
+            server: Servidor IMAP (padrão: GMAIL_SERVER do .env ou imap.gmail.com)
         """
         self.email_address = email_address
         self.password = password
+        self.server = server or os.getenv("GMAIL_SERVER", "imap.gmail.com")
         self.mail = None
-    
+
     def connect(self):
         """Conecta ao servidor IMAP do Gmail"""
         try:
-            self.mail = imaplib.IMAP4_SSL("imap.gmail.com")
+            self.mail = imaplib.IMAP4_SSL(self.server)
             self.mail.login(self.email_address, self.password)
-            print(f"✓ Conectado com sucesso ao Gmail: {self.email_address}")
+            print(f"✓ Conectado com sucesso a {self.server}: {self.email_address}")
             return True
         except Exception as e:
             print(f"✗ Erro ao conectar: {e}")

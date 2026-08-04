@@ -20,3 +20,6 @@ logs/
 # Plugin de proxy gerado em runtime (contem credenciais)
 proxy_auth_plugin/
 proxy_auth_plugin.zip
+
+# Contas geradas (contem credenciais)
+data/accounts_created.csv

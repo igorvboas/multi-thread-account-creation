@@ -374,14 +374,15 @@ class GmailTester:
         
         gmail_username = os.getenv("GMAIL_USERNAME")
         gmail_password = os.getenv("GMAIL_PASSWORD")
-        
+        gmail_server = os.getenv("GMAIL_SERVER", "imap.gmail.com")
+
         if not gmail_username or not gmail_password:
             print(f"❌ Credenciais Gmail não configuradas no .env")
             print(f"   Configure: GMAIL_USERNAME e GMAIL_PASSWORD")
             return False
         
         try:
-            reader = GmailReader(gmail_username, gmail_password)
+            reader = GmailReader(gmail_username, gmail_password, gmail_server)
             if reader.connect():
                 print(f"✅ Conexão Gmail bem-sucedida para: {gmail_username}")
                 
